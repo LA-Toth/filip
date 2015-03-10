@@ -1,0 +1,20 @@
+# Jetbrains stuff
+/.idea/
+
+# Python cache files
+__pycache__
+
+# Temporary files
+\#*
+*.swp
+*.swo
+*~
+
+# Patch-related files
+*.orig
+*.rej
+
+# Directories for ./setup.py
+/build
+/dist
+/*.egg-info
