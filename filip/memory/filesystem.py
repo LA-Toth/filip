@@ -14,8 +14,6 @@ class _Directory(_Entry):
         self.__entries = dict()
 
     def add(self, name: str, entry: _Entry):
-        if name in self.__entries:
-            raise FileExistsError()
         self.__entries[name] = entry
 
     def has(self, name: str):
@@ -32,30 +30,49 @@ class InMemoryFilesystem:
 
     def __init__(self):
         self.__tree = _Directory()
+        self.__current_directory = []
+
+    def __normalize_and_split_path(self, path):
+        if path.startswith(os.path.sep):
+            abs_path_list = os.path.normpath(path).split(os.path.sep)[1:]
+        else:
+            normalized_abs_path = os.path.normpath(os.path.sep.join(self.__current_directory) + os.path.sep + path)
+            abs_path_list = normalized_abs_path.split(os.path.sep)
+
+        return [p for p in abs_path_list if p]
 
     def makedirs(self, path: str):
-        path = path.split(os.path.sep)
+        abs_path = self.__normalize_and_split_path(path)
+        if len(abs_path) == 0:
+            raise FileExistsError(os.path.sep)
+
         current = self.__tree
-        for entry in path[:-1]:
-            if not entry:
-                continue
+        for entry in abs_path[:-1]:
             if not current.has(entry):
                 current.add(entry, _Directory())
             current = current[entry]
 
-        current.add(path[-1], _Directory())
+        name = abs_path[-1]
+        if current.has(name):
+            raise FileExistsError(path)
+        current.add(name, _Directory())
 
     def exists(self, path: str):
-        path = path.split(os.path.sep)
+        abs_path = self.__normalize_and_split_path(path)
         current = self.__tree
 
-        for entry in path:
-            if not entry:
-                continue
-
+        for entry in abs_path:
             if not current.has(entry):
                 return False
 
             current = current[entry]
 
         return True
+
+    def get_current_directory(self):
+        return os.path.sep + os.path.sep.join(self.__current_directory)
+
+    def set_current_directory(self, path: str):
+        if not self.exists(path):
+            raise FileNotFoundError(path)
+        self.__current_directory = self.__normalize_and_split_path(path)
