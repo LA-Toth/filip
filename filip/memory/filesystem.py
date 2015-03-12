@@ -16,6 +16,9 @@ class _Directory(_Entry):
     def add(self, name: str, entry: _Entry):
         self.__entries[name] = entry
 
+    def remove(self, name: str):
+        del self.__entries[name]
+
     def has(self, name: str):
         return name in self.__entries
 
@@ -24,6 +27,9 @@ class _Directory(_Entry):
 
     def __getitem__(self, item):
         return self.__entries[item]
+
+    def __len__(self):
+        return len(self.__entries)
 
 
 class InMemoryFilesystem:
@@ -56,6 +62,21 @@ class InMemoryFilesystem:
         if current.has(name):
             raise FileExistsError(path)
         current.add(name, _Directory())
+
+    def remove_directory(self, path: str):
+        if not self.exists(path):
+            raise FileNotFoundError(path)
+
+        abs_path = self.__normalize_and_split_path(path)
+        current = self.__tree
+
+        for entry in abs_path[:-1]:
+            current = current[entry]
+
+        name = abs_path[-1]
+        if len(current[name]):
+            raise OSError(path)
+        current.remove(name)
 
     def exists(self, path: str):
         abs_path = self.__normalize_and_split_path(path)

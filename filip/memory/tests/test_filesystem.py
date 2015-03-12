@@ -73,3 +73,24 @@ class TestFilesystemsDirectoryRelatedMethods(unittest.TestCase):
         self.assertFalse(self.fs.exists('a_dir'))
         self.assertTrue(self.fs.exists(os.path.sep + 'a_dir'))
 
+    def test_that_nonexistent_directory_cannot_be_removed(self):
+        self.assertRaises(FileNotFoundError, self.fs.remove_directory, 'nonexistent')
+
+    def test_that_empty_directory_can_be_removed(self):
+        self.fs.makedirs('a_dir')
+        self.fs.remove_directory('a_dir')
+        self.assertFalse(self.fs.exists('a_dir'))
+
+    def test_removing_directory_is_affected_by_current_directory(self):
+        self.fs.makedirs(os.path.join('a_dir', 'b_dir'))
+        self.fs.set_current_directory('a_dir')
+        self.assertRaises(FileNotFoundError, self.fs.remove_directory, 'a_dir')
+        self.fs.remove_directory('b_dir')
+        self.assertFalse(self.fs.exists(os.path.sep + os.path.join('a_dir', 'b_dir')))
+        self.assertTrue(self.fs.exists(os.path.sep + 'a_dir'))
+        self.fs.remove_directory(os.path.sep + 'a_dir')
+        self.assertFalse(self.fs.exists(os.path.sep + 'a_dir'))
+
+    def test_non_empty_directory_cannot_be_removed(self):
+        self.fs.makedirs(os.path.join('a_dir', 'b_dir'))
+        self.assertRaises(OSError, self.fs.remove_directory, 'a_dir')
