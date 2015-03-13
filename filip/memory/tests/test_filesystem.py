@@ -102,3 +102,16 @@ class TestFilesystemsDirectoryRelatedMethods(FileSystemTest):
     def test_non_empty_directory_cannot_be_removed(self):
         self.fs.makedirs(os.path.join('a_dir', 'b_dir'))
         self.assertRaises(OSError, self.fs.remove_directory, 'a_dir')
+
+
+class TestFilesystemsRWMethods(FileSystemTest):
+
+    def test_that_a_file_can_be_written_and_its_content_can_be_read(self):
+        self.fs.write('apple', 'some\ntext')
+        self.assertExist('apple')
+        self.assertEqual('some\ntext', self.fs.read('apple'))
+
+    def test_that_a_file_in_subdirectory_can_be_written(self):
+        self.fs.makedirs('a_dir')
+        self.fs.write(os.path.join('a_dir', 'a_file'), 'something')
+        self.assertEqual('something', self.fs.read(os.path.join('a_dir', 'a_file')))

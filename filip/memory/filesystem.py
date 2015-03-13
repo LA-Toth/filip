@@ -32,6 +32,16 @@ class _Directory(_Entry):
         return len(self.__entries)
 
 
+class _File(_Entry):
+    def __init__(self, content: str):
+        super().__init__()
+        self.__content = content
+
+    @property
+    def content(self) -> str:
+        return self.__content
+
+
 class InMemoryFilesystem:
 
     def __init__(self):
@@ -97,3 +107,23 @@ class InMemoryFilesystem:
         if not self.exists(path):
             raise FileNotFoundError(path)
         self.__current_directory = self.__normalize_and_split_path(path)
+
+    def write(self, path: str, text: str):
+        abs_path = self.__normalize_and_split_path(path)
+        current = self.__tree
+
+        for entry_name in abs_path[:-1]:
+            current = current[entry_name]
+
+        name = abs_path[-1]
+        entry = _File(text)
+        current.add(name, entry)
+
+    def read(self, path: str) -> str:
+        abs_path = self.__normalize_and_split_path(path)
+        current = self.__tree
+
+        for entry_name in abs_path:
+            current = current[entry_name]
+
+        return current.content
