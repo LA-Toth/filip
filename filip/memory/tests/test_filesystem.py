@@ -7,10 +7,18 @@ import unittest
 from filip.memory.filesystem import InMemoryFilesystem
 
 
-class TestFilesystemsDirectoryRelatedMethods(unittest.TestCase):
-
+class FileSystemTest(unittest.TestCase):
     def setUp(self):
         self.fs = InMemoryFilesystem()
+
+    def assertExist(self, path: str):
+        self.assertTrue(self.fs.exists(path), msg='The filesystem entry is missing, it should exist')
+
+    def assertNotExist(self, path: str):
+        self.assertFalse(self.fs.exists(path), msg='The filesystem entry exists, it should be missing')
+
+
+class TestFilesystemsDirectoryRelatedMethods(FileSystemTest):
 
     def test_that_root_directory_exists(self):
         self.fs.exists(os.path.sep)
@@ -61,17 +69,17 @@ class TestFilesystemsDirectoryRelatedMethods(unittest.TestCase):
         self.fs.makedirs('mydirectory')
         self.fs.set_current_directory('mydirectory')
         self.fs.makedirs('a_dir')
-        self.assertFalse(self.fs.exists(os.path.sep + 'a_dir'))
-        self.assertTrue(self.fs.exists('a_dir'))
-        self.assertTrue(self.fs.exists(os.path.sep + os.path.join('mydirectory', 'a_dir')))
+        self.assertNotExist(os.path.sep + 'a_dir')
+        self.assertExist('a_dir')
+        self.assertExist(os.path.sep + os.path.join('mydirectory', 'a_dir'))
 
     def test_that_creating_directory_with_absolute_path_is_independent_from_current_directory(self):
         self.fs.makedirs('mydirectory')
         self.fs.set_current_directory('mydirectory')
         self.fs.makedirs(os.path.sep + 'a_dir')
-        self.assertTrue(self.fs.exists(os.path.sep + 'a_dir'))
-        self.assertFalse(self.fs.exists('a_dir'))
-        self.assertTrue(self.fs.exists(os.path.sep + 'a_dir'))
+        self.assertExist(os.path.sep + 'a_dir')
+        self.assertNotExist('a_dir')
+        self.assertExist(os.path.sep + 'a_dir')
 
     def test_that_nonexistent_directory_cannot_be_removed(self):
         self.assertRaises(FileNotFoundError, self.fs.remove_directory, 'nonexistent')
@@ -79,17 +87,17 @@ class TestFilesystemsDirectoryRelatedMethods(unittest.TestCase):
     def test_that_empty_directory_can_be_removed(self):
         self.fs.makedirs('a_dir')
         self.fs.remove_directory('a_dir')
-        self.assertFalse(self.fs.exists('a_dir'))
+        self.assertNotExist('a_dir')
 
     def test_removing_directory_is_affected_by_current_directory(self):
         self.fs.makedirs(os.path.join('a_dir', 'b_dir'))
         self.fs.set_current_directory('a_dir')
         self.assertRaises(FileNotFoundError, self.fs.remove_directory, 'a_dir')
         self.fs.remove_directory('b_dir')
-        self.assertFalse(self.fs.exists(os.path.sep + os.path.join('a_dir', 'b_dir')))
-        self.assertTrue(self.fs.exists(os.path.sep + 'a_dir'))
+        self.assertNotExist(os.path.sep + os.path.join('a_dir', 'b_dir'))
+        self.assertExist(os.path.sep + 'a_dir')
         self.fs.remove_directory(os.path.sep + 'a_dir')
-        self.assertFalse(self.fs.exists(os.path.sep + 'a_dir'))
+        self.assertNotExist(os.path.sep + 'a_dir')
 
     def test_non_empty_directory_cannot_be_removed(self):
         self.fs.makedirs(os.path.join('a_dir', 'b_dir'))
