@@ -115,3 +115,19 @@ class TestFilesystemsRWMethods(FileSystemTest):
         self.fs.makedirs('a_dir')
         self.fs.write(os.path.join('a_dir', 'a_file'), 'something')
         self.assertEqual('something', self.fs.read(os.path.join('a_dir', 'a_file')))
+
+    def test_that_reading_nonexistent_file_triggers_not_found_error(self):
+        self.assertRaises(FileNotFoundError, self.fs.read, 'nonexistent')
+
+    def test_that_nonexistent_parent_directory_triggers_not_found_error(self):
+        self.assertRaises(FileNotFoundError, self.fs.write, os.path.join('nonexistent', 'a_file'), 'anything')
+        self.assertRaises(FileNotFoundError, self.fs.read, os.path.join('nonexistent', 'a_file'))
+
+    def test_that_read_and_write_are_affected_by_current_directory(self):
+        self.fs.makedirs('a_dir')
+        self.fs.set_current_directory('a_dir')
+        self.fs.write(os.path.sep + 'a_file', 'hello')
+        self.fs.write('b_file', 'world')
+        self.assertEqual('hello', self.fs.read(os.path.join('..', 'a_file')))
+        self.assertEqual('world', self.fs.read('b_file'))
+        self.assertEqual('world', self.fs.read(os.path.sep.join(['', 'a_dir', 'b_file'])))

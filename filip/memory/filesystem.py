@@ -113,6 +113,8 @@ class InMemoryFilesystem:
         current = self.__tree
 
         for entry_name in abs_path[:-1]:
+            if not current.has(entry_name):
+                raise FileNotFoundError(path)
             current = current[entry_name]
 
         name = abs_path[-1]
@@ -120,6 +122,8 @@ class InMemoryFilesystem:
         current.add(name, entry)
 
     def read(self, path: str) -> str:
+        if not self.exists(path):
+            raise FileNotFoundError(path)
         abs_path = self.__normalize_and_split_path(path)
         current = self.__tree
 
