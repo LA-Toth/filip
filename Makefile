@@ -1,8 +1,10 @@
-NOSE ?= python -m nose
-PEP8 ?= python -m pep8
-PYLINT ?= python -m pylint
+NOSE ?= python3 -m nose
+PEP8 ?= python3 -m pep8
+PYLINT ?= python3 -m pylint
 
 NOSE_TEST_PATHS ?= filip
+
+PYLINT_DIR=doc/reports/pylint
 
 .PHONY: help
 help:
@@ -14,7 +16,7 @@ help:
 	@echo "pep8             --- run pep8 checks only"
 
 .PHONY: check
-check: cs tests features
+check: cs tests
 
 .PHONY: tests
 tests:
@@ -24,16 +26,16 @@ tests:
 .PHONY: cs
 cs: pep8
 	@echo Runing pylint
-	export PYLINTHOME=$(PYLINT_DIR)
-	mkdir -p $(PYLINT_DIR)
-	PYTHONPATH=".:$(PYTHONPATH)" $(PYLINT) --rcfile=.pylintrc filip
+	export PYLINTHOME=${PYLINT_DIR}
+	mkdir -p ${PYLINT_DIR}
+	PYTHONPATH=".:${PYTHONPATH}" ${PYLINT} --rcfile=.pylintrc filip
 
 .PHONY: codingstandards
 codingstandards: pep8
 	@echo Running pylint with reports
-	export PYLINTHOME=$(PYLINT_DIR)
-	mkdir -p $(PYLINT_DIR)
-	PYTHONPATH=".:$(PYTHONPATH)" $(PYLINT) --report=yes --rcfile=.pylintrc filip
+	export PYLINTHOME=${PYLINT_DIR}
+	mkdir -p ${PYLINT_DIR}
+	PYTHONPATH=".:${PYTHONPATH}" ${PYLINT} --report=yes --rcfile=.pylintrc filip
 
 # Ignored errors:
 #
